@@ -26,10 +26,14 @@
 
 현실적인 방법은 GitHub를 공통 동기화 지점으로 쓰는 것입니다.
 
-1. GitHub에 private repo 생성
-2. 이 환경의 문서를 GitHub repo에 업로드
-3. 맥 로컬 환경에서 repo clone 또는 pull
-4. 모바일 세션에서는 맥 환경을 통해 같은 repo 내용을 확인
+1. 이 환경의 문서를 `goslowhaim/sonicloud`에 업로드
+2. 맥 로컬 환경에서 `sonicloud` repo clone 또는 pull
+3. 모바일 세션에서는 맥 환경을 통해 같은 repo 내용을 확인
+
+주의:
+
+- `sonicloud`는 public repo이므로 민감 데이터는 올리지 않습니다.
+- 실제 후보 DB, API 키, 유료 데이터 원문은 private 저장소나 별도 storage로 분리합니다.
 
 대안:
 
