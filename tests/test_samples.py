@@ -5,6 +5,7 @@ import unittest
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 
 from sonicloud_harness.io import load_jsonl
+from sonicloud_harness.evaluation import evaluate_harness
 from sonicloud_harness.models import Evidence, GoldenCase, Opportunity, Source
 from sonicloud_harness.report import render_korean_report
 
@@ -33,6 +34,15 @@ class SampleDataTest(unittest.TestCase):
         self.assertIn("일일 시장조사 보고서", report)
         self.assertIn("상위 후보", report)
         self.assertIn("광고형 안드로이드 앱", report)
+
+    def test_seed_golden_cases_match(self) -> None:
+        evidence = load_jsonl(SAMPLES / "evidence.seed.jsonl", Evidence)
+        opportunities = load_jsonl(SAMPLES / "opportunities.seed.jsonl", Opportunity)
+        golden_cases = load_jsonl(SAMPLES / "golden_cases.seed.jsonl", GoldenCase)
+        result = evaluate_harness(evidence, opportunities, golden_cases)
+
+        self.assertFalse(result.has_blocking_issues)
+        self.assertEqual(result.golden_accuracy, 1.0)
 
 
 if __name__ == "__main__":
