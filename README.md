@@ -25,6 +25,7 @@
 - [운영 모드](docs/06-operating-modes.md)
 - [GitHub 및 세션 운영](docs/07-github-and-sessions.md)
 - [데이터 소스 정책](docs/08-data-source-policy.md)
+- [광고 타이밍 정책 모듈](docs/09-ad-timing-policy.md)
 
 ## 초기 원칙
 
