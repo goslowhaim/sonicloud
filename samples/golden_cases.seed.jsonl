@@ -1,2 +1,5 @@
 {"case_id":"golden_simple_pdf_scanner","opportunity_id":"opp_simple_pdf_scanner","valid_opportunity":"uncertain","expected_decision":"watch","rationale_ko":"수요 신호와 불만 신호는 분명하지만 경쟁이 강하고 광고 삽입을 잘못하면 핵심 불만을 재현할 수 있어 바로 pursue보다 watch가 적절하다."}
 {"case_id":"golden_reliable_pdf_converter","opportunity_id":"opp_reliable_offline_pdf_converter","valid_opportunity":"uncertain","expected_decision":"watch","rationale_ko":"문서 변환 유틸은 수요와 광고 선례가 있지만 차별화 범위와 변환 안정성 검증이 필요하다."}
+{"case_id":"golden_minimal_permission_qr","opportunity_id":"opp_minimal_permission_qr_scanner","valid_opportunity":"uncertain","expected_decision":"hold","rationale_ko":"권한 최소화 포지션은 설득력이 있지만 QR 스캐너 카테고리의 신뢰 리스크와 내장 기능 경쟁 때문에 보류가 적절하다."}
+{"case_id":"golden_file_manager_ads","opportunity_id":"opp_trust_first_file_manager","valid_opportunity":"no","expected_decision":"reject","rationale_ko":"파일 매니저는 권한 민감도와 광고 거부감이 강해 광고형 2주 MVP 후보로는 부적합하다."}
+{"case_id":"golden_ad_timing_policy","opportunity_id":"opp_ad_timing_policy_module","valid_opportunity":"yes","expected_decision":"pursue","rationale_ko":"단일 앱 후보보다 모듈 후보지만 반복 출시 시스템의 리스크를 줄이고 여러 앱에 재사용되므로 즉시 구현 가치가 있다."}
