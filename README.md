@@ -43,3 +43,18 @@
 - 하네스용 샘플 데이터는 사용자가 채우는 방식이 아니라 프로젝트에서 직접 수집한다.
 - 최종 보고서는 한국어로 작성한다. 원문 데이터가 영어여도 보고서 단계에서 한국어로 번역/정리한다.
 - 성인, 도박 카테고리는 제외한다.
+
+## Phase 1 하네스 실행
+
+현재 구현된 최소 루프는 표준 라이브러리만 사용합니다.
+
+```bash
+python3 -m unittest discover -s tests
+PYTHONPATH=src python3 -m sonicloud_harness.cli validate \
+  --evidence samples/evidence.seed.jsonl \
+  --opportunities samples/opportunities.seed.jsonl
+PYTHONPATH=src python3 -m sonicloud_harness.cli report \
+  --evidence samples/evidence.seed.jsonl \
+  --opportunities samples/opportunities.seed.jsonl \
+  --output reports/sample-report.md
+```
