@@ -1,0 +1,110 @@
+from __future__ import annotations
+
+from dataclasses import dataclass, field
+from enum import Enum
+
+
+class AdEvent(str, Enum):
+    APP_OPENED = "app_opened"
+    TASK_STARTED = "task_started"
+    TASK_COMPLETED = "task_completed"
+    RESULT_SAVED = "result_saved"
+    RESULT_SHARED = "result_shared"
+    SCREEN_CLOSED = "screen_closed"
+    SETTINGS_OPENED = "settings_opened"
+
+
+class ScreenType(str, Enum):
+    INPUT = "input"
+    PROCESSING = "processing"
+    RESULT = "result"
+    SHARE = "share"
+    SETTINGS = "settings"
+    ERROR = "error"
+
+
+class AdFormat(str, Enum):
+    BANNER = "banner"
+    INTERSTITIAL = "interstitial"
+    REWARDED = "rewarded"
+
+
+@dataclass(frozen=True)
+class AdContext:
+    event: AdEvent
+    screen: ScreenType
+    ad_format: AdFormat
+    now_seconds: int
+    last_ad_seconds: int | None = None
+    user_action_completed: bool = False
+    has_unsaved_work: bool = False
+    is_first_session: bool = False
+    has_error: bool = False
+
+
+@dataclass(frozen=True)
+class AdDecision:
+    allowed: bool
+    reason: str
+
+
+@dataclass(frozen=True)
+class AdTimingPolicy:
+    min_interval_seconds: int = 180
+    first_session_block_seconds: int = 120
+    allowed_completion_events: set[AdEvent] = field(
+        default_factory=lambda: {
+            AdEvent.TASK_COMPLETED,
+            AdEvent.RESULT_SAVED,
+            AdEvent.RESULT_SHARED,
+            AdEvent.SCREEN_CLOSED,
+        }
+    )
+    blocked_screens: set[ScreenType] = field(
+        default_factory=lambda: {
+            ScreenType.INPUT,
+            ScreenType.PROCESSING,
+            ScreenType.ERROR,
+        }
+    )
+
+    def decide(self, context: AdContext) -> AdDecision:
+        if context.has_error:
+            return AdDecision(False, "block_error_state")
+
+        if context.has_unsaved_work:
+            return AdDecision(False, "block_unsaved_work")
+
+        if context.screen in self.blocked_screens:
+            return AdDecision(False, f"block_screen_{context.screen.value}")
+
+        if context.ad_format == AdFormat.INTERSTITIAL:
+            if context.event not in self.allowed_completion_events:
+                return AdDecision(False, f"block_event_{context.event.value}")
+            if not context.user_action_completed:
+                return AdDecision(False, "block_before_user_action_completed")
+
+        if context.is_first_session and context.now_seconds < self.first_session_block_seconds:
+            return AdDecision(False, "block_first_session_warmup")
+
+        if context.last_ad_seconds is not None:
+            elapsed = context.now_seconds - context.last_ad_seconds
+            if elapsed < self.min_interval_seconds:
+                return AdDecision(False, "block_cooldown")
+
+        return AdDecision(True, "allow")
+
+
+class FakeAdAdapter:
+    def __init__(self, policy: AdTimingPolicy | None = None) -> None:
+        self.policy = policy or AdTimingPolicy()
+        self.shown: list[AdContext] = []
+        self.blocked: list[tuple[AdContext, AdDecision]] = []
+
+    def maybe_show(self, context: AdContext) -> AdDecision:
+        decision = self.policy.decide(context)
+        if decision.allowed:
+            self.shown.append(context)
+        else:
+            self.blocked.append((context, decision))
+        return decision
