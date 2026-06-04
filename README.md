@@ -57,4 +57,9 @@ PYTHONPATH=src python3 -m sonicloud_harness.cli report \
   --evidence samples/evidence.seed.jsonl \
   --opportunities samples/opportunities.seed.jsonl \
   --output reports/sample-report.md
+PYTHONPATH=src python3 -m sonicloud_harness.cli evaluate \
+  --evidence samples/evidence.seed.jsonl \
+  --opportunities samples/opportunities.seed.jsonl \
+  --golden-cases samples/golden_cases.seed.jsonl \
+  --output reports/evaluation.md
 ```
