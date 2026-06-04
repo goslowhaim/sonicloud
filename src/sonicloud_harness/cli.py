@@ -4,7 +4,8 @@ import argparse
 from pathlib import Path
 
 from .io import load_jsonl
-from .models import Evidence, Opportunity
+from .evaluation import evaluate_harness, render_evaluation_markdown
+from .models import Evidence, GoldenCase, Opportunity
 from .report import render_korean_report
 
 
@@ -21,6 +22,12 @@ def main() -> None:
     report_parser.add_argument("--opportunities", type=Path, required=True)
     report_parser.add_argument("--output", type=Path, required=True)
 
+    evaluate_parser = subparsers.add_parser("evaluate", help="Evaluate grounding and golden-case decisions.")
+    evaluate_parser.add_argument("--evidence", type=Path, required=True)
+    evaluate_parser.add_argument("--opportunities", type=Path, required=True)
+    evaluate_parser.add_argument("--golden-cases", type=Path, required=True)
+    evaluate_parser.add_argument("--output", type=Path)
+
     args = parser.parse_args()
 
     evidence = load_jsonl(args.evidence, Evidence)
@@ -34,6 +41,19 @@ def main() -> None:
         args.output.parent.mkdir(parents=True, exist_ok=True)
         args.output.write_text(render_korean_report(opportunities, evidence), encoding="utf-8")
         print(f"wrote {args.output}")
+
+    if args.command == "evaluate":
+        golden_cases = load_jsonl(args.golden_cases, GoldenCase)
+        result = evaluate_harness(evidence, opportunities, golden_cases)
+        output = render_evaluation_markdown(result)
+        if args.output:
+            args.output.parent.mkdir(parents=True, exist_ok=True)
+            args.output.write_text(output, encoding="utf-8")
+            print(f"wrote {args.output}")
+        else:
+            print(output)
+        if result.has_blocking_issues:
+            raise SystemExit(1)
 
 
 if __name__ == "__main__":
