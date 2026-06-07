@@ -101,3 +101,15 @@ def _parse_value(type_hint: Any, value: Any, field_name: str) -> Any:
         return parse_dataclass(type_hint, value)
 
     return value
+
+
+def parse_bool(value: Any, field_name: str) -> bool:
+    if isinstance(value, bool):
+        return value
+    raise ValidationError(f"{field_name} must be a boolean")
+
+
+def parse_int(value: Any, field_name: str) -> int:
+    if isinstance(value, int):
+        return value
+    raise ValidationError(f"{field_name} must be an integer")
