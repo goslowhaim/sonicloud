@@ -11,6 +11,7 @@ from .evaluation import evaluate_harness, render_evaluation_markdown
 from .models import Evidence, GoldenCase, Opportunity
 from .report import render_korean_report
 from .ad_policy import AppCategory, render_simulation_markdown, simulate_ad_flow
+from .sources import load_source_targets, render_source_validation_markdown, validate_source_targets
 
 
 def main() -> None:
@@ -42,7 +43,25 @@ def main() -> None:
     batch_parser.add_argument("--config", type=Path, default=Path("config/default_batch.json"))
     batch_parser.add_argument("--run-date", default=date.today().isoformat())
 
+    sources_parser = subparsers.add_parser("validate-sources", help="Validate collection source targets.")
+    sources_parser.add_argument("--targets", type=Path, required=True)
+    sources_parser.add_argument("--output", type=Path)
+
     args = parser.parse_args()
+
+    if args.command == "validate-sources":
+        targets = load_source_targets(args.targets)
+        issues = validate_source_targets(targets)
+        output = render_source_validation_markdown(targets, issues)
+        if args.output:
+            args.output.parent.mkdir(parents=True, exist_ok=True)
+            args.output.write_text(output, encoding="utf-8")
+            print(f"wrote {args.output}")
+        else:
+            print(output)
+        if any(issue.severity == "error" for issue in issues):
+            raise SystemExit(1)
+        return
 
     if args.command == "run-batch":
         result = run_batch(load_batch_config(args.config), args.run_date)
