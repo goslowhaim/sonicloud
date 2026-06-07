@@ -63,4 +63,8 @@ PYTHONPATH=src python3 -m sonicloud_harness.cli evaluate \
   --opportunities samples/opportunities.seed.jsonl \
   --golden-cases samples/golden_cases.seed.jsonl \
   --output reports/evaluation.md
+PYTHONPATH=src python3 -m sonicloud_harness.cli simulate-ads \
+  --category document_scanner \
+  --flow samples/ad_flows.document_scanner.seed.jsonl \
+  --output reports/ad-simulation.document-scanner.md
 ```
