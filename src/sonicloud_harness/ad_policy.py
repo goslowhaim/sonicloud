@@ -29,6 +29,14 @@ class AdFormat(str, Enum):
     REWARDED = "rewarded"
 
 
+class AppCategory(str, Enum):
+    DEFAULT = "default"
+    DOCUMENT_SCANNER = "document_scanner"
+    PDF_CONVERTER = "pdf_converter"
+    QR_SCANNER = "qr_scanner"
+    FILE_MANAGER = "file_manager"
+
+
 @dataclass(frozen=True)
 class AdContext:
     event: AdEvent
@@ -93,6 +101,80 @@ class AdTimingPolicy:
                 return AdDecision(False, "block_cooldown")
 
         return AdDecision(True, "allow")
+
+    @classmethod
+    def for_category(cls, category: AppCategory) -> "AdTimingPolicy":
+        if category == AppCategory.DEFAULT:
+            return cls()
+
+        if category == AppCategory.DOCUMENT_SCANNER:
+            return cls(
+                min_interval_seconds=240,
+                first_session_block_seconds=180,
+                allowed_completion_events={
+                    AdEvent.RESULT_SAVED,
+                    AdEvent.RESULT_SHARED,
+                    AdEvent.SCREEN_CLOSED,
+                },
+                blocked_screens={
+                    ScreenType.INPUT,
+                    ScreenType.PROCESSING,
+                    ScreenType.SHARE,
+                    ScreenType.ERROR,
+                },
+            )
+
+        if category == AppCategory.PDF_CONVERTER:
+            return cls(
+                min_interval_seconds=180,
+                first_session_block_seconds=120,
+                allowed_completion_events={
+                    AdEvent.TASK_COMPLETED,
+                    AdEvent.RESULT_SAVED,
+                    AdEvent.RESULT_SHARED,
+                    AdEvent.SCREEN_CLOSED,
+                },
+                blocked_screens={
+                    ScreenType.INPUT,
+                    ScreenType.PROCESSING,
+                    ScreenType.ERROR,
+                },
+            )
+
+        if category == AppCategory.QR_SCANNER:
+            return cls(
+                min_interval_seconds=300,
+                first_session_block_seconds=180,
+                allowed_completion_events={
+                    AdEvent.TASK_COMPLETED,
+                    AdEvent.SCREEN_CLOSED,
+                },
+                blocked_screens={
+                    ScreenType.INPUT,
+                    ScreenType.PROCESSING,
+                    ScreenType.SHARE,
+                    ScreenType.ERROR,
+                },
+            )
+
+        if category == AppCategory.FILE_MANAGER:
+            return cls(
+                min_interval_seconds=420,
+                first_session_block_seconds=240,
+                allowed_completion_events={
+                    AdEvent.SCREEN_CLOSED,
+                    AdEvent.SETTINGS_OPENED,
+                },
+                blocked_screens={
+                    ScreenType.INPUT,
+                    ScreenType.PROCESSING,
+                    ScreenType.RESULT,
+                    ScreenType.SHARE,
+                    ScreenType.ERROR,
+                },
+            )
+
+        raise ValueError(f"Unsupported app category: {category.value}")
 
 
 class FakeAdAdapter:
