@@ -12,6 +12,8 @@ from sonicloud_harness.ad_policy import (
     AppCategory,
     FakeAdAdapter,
     ScreenType,
+    render_simulation_markdown,
+    simulate_ad_flow,
 )
 
 
@@ -147,6 +149,48 @@ class AdTimingPolicyTest(unittest.TestCase):
         )
 
         self.assertTrue(decision.allowed)
+
+    def test_simulation_counts_decisions(self) -> None:
+        result = simulate_ad_flow(
+            AppCategory.DOCUMENT_SCANNER,
+            [
+                AdContext(
+                    event=AdEvent.TASK_STARTED,
+                    screen=ScreenType.INPUT,
+                    ad_format=AdFormat.INTERSTITIAL,
+                    now_seconds=100,
+                ),
+                AdContext(
+                    event=AdEvent.RESULT_SAVED,
+                    screen=ScreenType.RESULT,
+                    ad_format=AdFormat.INTERSTITIAL,
+                    now_seconds=500,
+                    user_action_completed=True,
+                ),
+            ],
+        )
+
+        self.assertEqual(result.blocked_count, 1)
+        self.assertEqual(result.shown_count, 1)
+
+    def test_simulation_markdown_renders_decision_reasons(self) -> None:
+        result = simulate_ad_flow(
+            AppCategory.FILE_MANAGER,
+            [
+                AdContext(
+                    label="blocked result",
+                    event=AdEvent.TASK_COMPLETED,
+                    screen=ScreenType.RESULT,
+                    ad_format=AdFormat.INTERSTITIAL,
+                    now_seconds=500,
+                    user_action_completed=True,
+                )
+            ],
+        )
+        markdown = render_simulation_markdown(result)
+
+        self.assertIn("광고 정책 시뮬레이션", markdown)
+        self.assertIn("block_screen_result", markdown)
 
 
 if __name__ == "__main__":
