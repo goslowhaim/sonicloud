@@ -44,3 +44,20 @@
 | `pdf_converter` | 결과 생성/저장/공유 후 허용. 기본 정책과 유사. |
 | `qr_scanner` | 카메라/URL 신뢰 리스크 때문에 쿨다운을 길게 두고 공유 화면 차단. |
 | `file_manager` | 파일 접근 권한 민감도가 높아 결과/공유 화면도 차단. 설정/종료 이벤트 위주 허용. |
+
+## 시뮬레이션
+
+앱 플로우를 JSONL로 넣으면 정책 결정 로그를 Markdown으로 렌더링할 수 있습니다.
+
+```bash
+PYTHONPATH=src python3 -m sonicloud_harness.cli simulate-ads \
+  --category document_scanner \
+  --flow samples/ad_flows.document_scanner.seed.jsonl \
+  --output reports/ad-simulation.document-scanner.md
+```
+
+샘플 플로우:
+
+- `samples/ad_flows.document_scanner.seed.jsonl`
+- `samples/ad_flows.qr_scanner.seed.jsonl`
+- `samples/ad_flows.file_manager.seed.jsonl`
