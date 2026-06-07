@@ -1,7 +1,10 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+from pathlib import Path
 
+from .ad_policy import simulate_ad_flow
+from .ad_simulation import AdSimulationSpec, load_ad_contexts
 from .models import Evidence, GoldenCase, Opportunity
 
 
@@ -35,6 +38,7 @@ def evaluate_harness(
     evidence: list[Evidence],
     opportunities: list[Opportunity],
     golden_cases: list[GoldenCase],
+    ad_simulation_specs: list[AdSimulationSpec] | None = None,
 ) -> EvaluationResult:
     issues: list[EvaluationIssue] = []
     evidence_ids = {item.evidence_id for item in evidence}
@@ -98,12 +102,94 @@ def evaluate_harness(
                 )
             )
 
+    if ad_simulation_specs:
+        issues.extend(evaluate_ad_simulations(opportunities, ad_simulation_specs))
+
     return EvaluationResult(
         issues=issues,
         golden_total=len(golden_cases),
         golden_matches=golden_matches,
         opportunity_total=len(opportunities),
     )
+
+
+def evaluate_ad_simulations(
+    opportunities: list[Opportunity],
+    specs: list[AdSimulationSpec],
+) -> list[EvaluationIssue]:
+    issues: list[EvaluationIssue] = []
+    opportunity_by_id = {item.opportunity_id: item for item in opportunities}
+
+    for spec in specs:
+        opportunity = opportunity_by_id.get(spec.opportunity_id)
+        if opportunity is None:
+            issues.append(
+                EvaluationIssue(
+                    severity="error",
+                    code="missing_simulation_opportunity",
+                    subject_id=spec.simulation_id,
+                    message=f"Ad simulation references missing opportunity: {spec.opportunity_id}",
+                )
+            )
+            continue
+
+        try:
+            contexts = load_ad_contexts(Path(spec.flow_path))
+            result = simulate_ad_flow(spec.category, contexts)
+        except Exception as exc:
+            issues.append(
+                EvaluationIssue(
+                    severity="error",
+                    code="ad_simulation_failed",
+                    subject_id=spec.simulation_id,
+                    message=str(exc),
+                )
+            )
+            continue
+
+        if result.shown_count != spec.expected_shown_count:
+            issues.append(
+                EvaluationIssue(
+                    severity="error",
+                    code="ad_simulation_shown_mismatch",
+                    subject_id=spec.simulation_id,
+                    message=f"Expected shown={spec.expected_shown_count}, got {result.shown_count}.",
+                )
+            )
+
+        if result.blocked_count != spec.expected_blocked_count:
+            issues.append(
+                EvaluationIssue(
+                    severity="error",
+                    code="ad_simulation_blocked_mismatch",
+                    subject_id=spec.simulation_id,
+                    message=f"Expected blocked={spec.expected_blocked_count}, got {result.blocked_count}.",
+                )
+            )
+
+        observed_reasons = {step.decision.reason for step in result.steps if not step.decision.allowed}
+        for reason in spec.required_block_reasons:
+            if reason not in observed_reasons:
+                issues.append(
+                    EvaluationIssue(
+                        severity="error",
+                        code="ad_simulation_missing_block_reason",
+                        subject_id=spec.simulation_id,
+                        message=f"Required block reason was not observed: {reason}",
+                    )
+                )
+
+        if opportunity.decision.value == "pursue" and result.blocked_count == 0:
+            issues.append(
+                EvaluationIssue(
+                    severity="error",
+                    code="ad_simulation_no_guardrail",
+                    subject_id=spec.simulation_id,
+                    message="Pursue opportunity ad simulation did not block any unsafe ad moments.",
+                )
+            )
+
+    return issues
 
 
 def render_evaluation_markdown(result: EvaluationResult) -> str:
