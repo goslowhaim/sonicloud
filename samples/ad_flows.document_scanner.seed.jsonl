@@ -1,0 +1,6 @@
+{"label":"open app warmup","event":"app_opened","screen":"input","ad_format":"interstitial","now_seconds":30,"is_first_session":true}
+{"label":"capture document","event":"task_started","screen":"input","ad_format":"interstitial","now_seconds":180,"user_action_completed":false}
+{"label":"processing scan","event":"task_started","screen":"processing","ad_format":"interstitial","now_seconds":210,"user_action_completed":false}
+{"label":"save completed","event":"result_saved","screen":"result","ad_format":"interstitial","now_seconds":360,"user_action_completed":true}
+{"label":"share screen blocked","event":"result_shared","screen":"share","ad_format":"interstitial","now_seconds":620,"last_ad_seconds":360,"user_action_completed":true}
+{"label":"close result after cooldown","event":"screen_closed","screen":"result","ad_format":"interstitial","now_seconds":700,"last_ad_seconds":360,"user_action_completed":true}
