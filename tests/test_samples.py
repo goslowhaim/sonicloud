@@ -1,10 +1,12 @@
 from pathlib import Path
 import subprocess
 import sys
+import tempfile
 import unittest
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 
+from sonicloud_harness.batch import BatchConfig, run_batch
 from sonicloud_harness.io import load_jsonl
 from sonicloud_harness.ad_simulation import load_ad_simulation_specs
 from sonicloud_harness.evaluation import evaluate_harness
@@ -75,6 +77,24 @@ class SampleDataTest(unittest.TestCase):
         )
 
         self.assertIn("광고 정책 시뮬레이션", completed.stdout)
+
+    def test_batch_runner_writes_daily_outputs(self) -> None:
+        with tempfile.TemporaryDirectory() as tmpdir:
+            result = run_batch(
+                BatchConfig(
+                    evidence_path=str(SAMPLES / "evidence.seed.jsonl"),
+                    opportunities_path=str(SAMPLES / "opportunities.seed.jsonl"),
+                    golden_cases_path=str(SAMPLES / "golden_cases.seed.jsonl"),
+                    ad_simulations_path=str(SAMPLES / "ad_simulation_manifest.seed.jsonl"),
+                    output_dir=tmpdir,
+                ),
+                "2026-06-07",
+            )
+
+            self.assertFalse(result.has_blocking_issues)
+            self.assertTrue(result.report_path.exists())
+            self.assertTrue(result.evaluation_path.exists())
+            self.assertEqual(len(result.ad_simulation_paths), 3)
 
 
 if __name__ == "__main__":
