@@ -48,6 +48,7 @@ class AdContext:
     has_unsaved_work: bool = False
     is_first_session: bool = False
     has_error: bool = False
+    label: str = ""
 
 
 @dataclass(frozen=True)
@@ -190,3 +191,62 @@ class FakeAdAdapter:
         else:
             self.blocked.append((context, decision))
         return decision
+
+
+@dataclass(frozen=True)
+class AdSimulationStep:
+    context: AdContext
+    decision: AdDecision
+
+
+@dataclass(frozen=True)
+class AdSimulationResult:
+    category: AppCategory
+    steps: list[AdSimulationStep]
+
+    @property
+    def shown_count(self) -> int:
+        return sum(1 for step in self.steps if step.decision.allowed)
+
+    @property
+    def blocked_count(self) -> int:
+        return sum(1 for step in self.steps if not step.decision.allowed)
+
+
+def simulate_ad_flow(category: AppCategory, contexts: list[AdContext]) -> AdSimulationResult:
+    policy = AdTimingPolicy.for_category(category)
+    adapter = FakeAdAdapter(policy)
+    steps = [AdSimulationStep(context, adapter.maybe_show(context)) for context in contexts]
+    return AdSimulationResult(category=category, steps=steps)
+
+
+def render_simulation_markdown(result: AdSimulationResult) -> str:
+    lines = [
+        "# 광고 정책 시뮬레이션",
+        "",
+        f"- 카테고리: `{result.category.value}`",
+        f"- 허용: {result.shown_count}",
+        f"- 차단: {result.blocked_count}",
+        "",
+        "| # | label | event | screen | format | decision | reason |",
+        "| --- | --- | --- | --- | --- | --- | --- |",
+    ]
+    for index, step in enumerate(result.steps, start=1):
+        context = step.context
+        decision = "allow" if step.decision.allowed else "block"
+        lines.append(
+            "| "
+            + " | ".join(
+                [
+                    str(index),
+                    context.label or "-",
+                    context.event.value,
+                    context.screen.value,
+                    context.ad_format.value,
+                    decision,
+                    step.decision.reason,
+                ]
+            )
+            + " |"
+        )
+    return "\n".join(lines)
