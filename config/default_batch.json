@@ -1,0 +1,8 @@
+{
+  "evidence_path": "samples/evidence.seed.jsonl",
+  "opportunities_path": "samples/opportunities.seed.jsonl",
+  "golden_cases_path": "samples/golden_cases.seed.jsonl",
+  "ad_simulations_path": "samples/ad_simulation_manifest.seed.jsonl",
+  "output_dir": "reports/batch",
+  "ad_simulation_reports": true
+}
