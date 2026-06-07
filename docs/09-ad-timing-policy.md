@@ -23,6 +23,7 @@
 ## 현재 API
 
 - `AdTimingPolicy.decide(context) -> AdDecision`
+- `AdTimingPolicy.for_category(category) -> AdTimingPolicy`
 - `FakeAdAdapter.maybe_show(context) -> AdDecision`
 
 이 모듈은 실제 광고 SDK를 사용하지 않습니다. Android 구현 단계에서 AdMob, AppLovin, Meta, Unity 같은 SDK 어댑터를 붙일 때 정책 레이어를 그대로 재사용하는 것을 목표로 합니다.
@@ -30,7 +31,16 @@
 ## 다음 구현 후보
 
 - Android/Kotlin 포팅
-- 광고 포맷별 세부 정책
-- 앱 카테고리별 정책 preset
 - 정책 로그 수집
 - A/B 테스트용 decision reason 집계
+
+## 카테고리 preset
+
+현재 preset은 다음 카테고리를 지원합니다.
+
+| 카테고리 | 정책 방향 |
+| --- | --- |
+| `document_scanner` | 저장/공유 후에만 보수적으로 허용. 공유 화면 자체는 차단. |
+| `pdf_converter` | 결과 생성/저장/공유 후 허용. 기본 정책과 유사. |
+| `qr_scanner` | 카메라/URL 신뢰 리스크 때문에 쿨다운을 길게 두고 공유 화면 차단. |
+| `file_manager` | 파일 접근 권한 민감도가 높아 결과/공유 화면도 차단. 설정/종료 이벤트 위주 허용. |
