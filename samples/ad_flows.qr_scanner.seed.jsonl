@@ -1,0 +1,4 @@
+{"label":"scan starts","event":"task_started","screen":"input","ad_format":"interstitial","now_seconds":200}
+{"label":"scan completed","event":"task_completed","screen":"result","ad_format":"interstitial","now_seconds":400,"user_action_completed":true}
+{"label":"rapid second scan blocked by cooldown","event":"task_completed","screen":"result","ad_format":"interstitial","now_seconds":620,"last_ad_seconds":400,"user_action_completed":true}
+{"label":"share blocked","event":"result_shared","screen":"share","ad_format":"interstitial","now_seconds":800,"last_ad_seconds":400,"user_action_completed":true}
