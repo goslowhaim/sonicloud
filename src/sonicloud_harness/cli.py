@@ -1,9 +1,11 @@
 from __future__ import annotations
 
 import argparse
+from datetime import date
 from pathlib import Path
 
 from .ad_simulation import load_ad_contexts, load_ad_simulation_specs
+from .batch import load_batch_config, run_batch
 from .io import load_jsonl
 from .evaluation import evaluate_harness, render_evaluation_markdown
 from .models import Evidence, GoldenCase, Opportunity
@@ -36,7 +38,21 @@ def main() -> None:
     simulate_parser.add_argument("--flow", type=Path, required=True)
     simulate_parser.add_argument("--output", type=Path)
 
+    batch_parser = subparsers.add_parser("run-batch", help="Run the daily batch harness.")
+    batch_parser.add_argument("--config", type=Path, default=Path("config/default_batch.json"))
+    batch_parser.add_argument("--run-date", default=date.today().isoformat())
+
     args = parser.parse_args()
+
+    if args.command == "run-batch":
+        result = run_batch(load_batch_config(args.config), args.run_date)
+        print(f"wrote {result.report_path}")
+        print(f"wrote {result.evaluation_path}")
+        for path in result.ad_simulation_paths:
+            print(f"wrote {path}")
+        if result.has_blocking_issues:
+            raise SystemExit(1)
+        return
 
     if args.command == "simulate-ads":
         contexts = load_ad_contexts(args.flow)
