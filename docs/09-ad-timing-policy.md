@@ -61,3 +61,16 @@ PYTHONPATH=src python3 -m sonicloud_harness.cli simulate-ads \
 - `samples/ad_flows.document_scanner.seed.jsonl`
 - `samples/ad_flows.qr_scanner.seed.jsonl`
 - `samples/ad_flows.file_manager.seed.jsonl`
+
+## 하네스 평가 통합
+
+광고 정책 모듈이 `pursue` 후보가 된 경우, 골든셋 판단만 통과해서는 부족합니다. `samples/ad_simulation_manifest.seed.jsonl`에 연결된 앱 플로우 시뮬레이션도 함께 통과해야 합니다.
+
+```bash
+PYTHONPATH=src python3 -m sonicloud_harness.cli evaluate \
+  --evidence samples/evidence.seed.jsonl \
+  --opportunities samples/opportunities.seed.jsonl \
+  --golden-cases samples/golden_cases.seed.jsonl \
+  --ad-simulations samples/ad_simulation_manifest.seed.jsonl \
+  --output reports/evaluation.md
+```
