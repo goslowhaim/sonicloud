@@ -12,6 +12,7 @@ from sonicloud_harness.ad_simulation import load_ad_simulation_specs
 from sonicloud_harness.evaluation import evaluate_harness
 from sonicloud_harness.models import Evidence, GoldenCase, Opportunity, Source
 from sonicloud_harness.report import render_korean_report
+from sonicloud_harness.sources import load_source_targets, validate_source_targets
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -95,6 +96,13 @@ class SampleDataTest(unittest.TestCase):
             self.assertTrue(result.report_path.exists())
             self.assertTrue(result.evaluation_path.exists())
             self.assertEqual(len(result.ad_simulation_paths), 3)
+
+    def test_source_targets_validate(self) -> None:
+        targets = load_source_targets(SAMPLES / "source_targets.seed.jsonl")
+        issues = validate_source_targets(targets)
+
+        self.assertGreaterEqual(len(targets), 3)
+        self.assertFalse(any(issue.severity == "error" for issue in issues))
 
 
 if __name__ == "__main__":
