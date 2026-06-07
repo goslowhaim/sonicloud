@@ -68,6 +68,8 @@ PYTHONPATH=src python3 -m sonicloud_harness.cli simulate-ads \
   --category document_scanner \
   --flow samples/ad_flows.document_scanner.seed.jsonl \
   --output reports/ad-simulation.document-scanner.md
+PYTHONPATH=src python3 -m sonicloud_harness.cli validate-sources \
+  --targets samples/source_targets.seed.jsonl
 PYTHONPATH=src python3 -m sonicloud_harness.cli run-batch \
   --config config/default_batch.json \
   --run-date 2026-06-07
